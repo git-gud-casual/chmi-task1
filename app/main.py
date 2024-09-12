@@ -1,9 +1,12 @@
 import sys
-import random
 import logging
 import datetime
+
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtGui import QPainter, QColor
+
+from map import Map, JsonLoader
+from map.painter import MapPainter
 
 current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 log_filename = f'mouse_position_{current_time}.log'
@@ -18,28 +21,25 @@ logging.basicConfig(
 
 
 class MyWidget(QtWidgets.QWidget):
+    _map: Map
+    _painter: QPainter
+    _map_painter: MapPainter
+
     def __init__(self):
         super().__init__()
-
-        self.hello = ["Hallo Welt", "Hei maailma", "Hola Mundo", "Привет мир"]
-
-        self.button = QtWidgets.QPushButton("Click me!")
-        self.text = QtWidgets.QLabel("Hello World", alignment=QtCore.Qt.AlignCenter)
-
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.addWidget(self.text)
-        self.layout.addWidget(self.button)
-
-        self.button.clicked.connect(self.magic)
-
-        # Таймер для обновления положения мыши
+        self._map = JsonLoader("map.json").load()
+        self._painter = QPainter(self)
+        self._map_painter = MapPainter(self._map, (self.width(), self.height()))
+        
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.track_mouse_position)
         self.timer.start(16)  # Обновление каждые 16 мс (примерно 60 кадров в секунду)
 
-    @QtCore.Slot()
-    def magic(self):
-        self.text.setText(random.choice(self.hello))
+    def paintEvent(self, event):
+        self._painter.begin(self)
+        self._map_painter.window_size = (self.width(), self.height())
+        self._map_painter.paint_objects(self._painter)
+        self._painter.end()
 
     def track_mouse_position(self):
         # Получаем глобальные координаты мыши
@@ -50,7 +50,7 @@ class MyWidget(QtWidgets.QWidget):
         x = local_pos.x()
         y = local_pos.y()
         # логируем положение мыши
-        if (self.width() > x > 0) and (0 < y < self.height()):
+        if (self.width() > x => 0) and (0 <= y < self.height()):
             logging.info(f"Координаты мыши: X={x}, Y={y}")
             # Выводим координаты в консоль
             print(f"Координаты мыши: X={x}, Y={y}")
