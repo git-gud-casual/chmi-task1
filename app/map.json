@@ -2,38 +2,6 @@
   "borders": [
     {
       "point": {
-        "x": 0,
-        "y": 0
-      },
-      "width": 3,
-      "height": 1000
-    },
-    {
-      "point": {
-        "x": 0,
-        "y": 0
-      },
-      "width": 1000,
-      "height": 3
-    },
-    {
-      "point": {
-        "x": 997,
-        "y": 0
-      },
-      "width": 3,
-      "height": 1000
-    },
-    {
-      "point": {
-        "x": 0,
-        "y": 997
-      },
-      "width": 1000,
-      "height": 3
-    },
-    {
-      "point": {
         "x": 200,
         "y": 0
       },
