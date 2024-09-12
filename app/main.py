@@ -1,15 +1,20 @@
 import sys
 import logging
 import datetime
+import os
 
 from PySide6 import QtCore, QtWidgets, QtGui
-from PySide6.QtGui import QPainter, QColor
+from PySide6.QtGui import QPainter
 
 from map import Map, JsonLoader
 from map.painter import MapPainter
 
+LOG_DIR = "logs"
+
 current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-log_filename = f'mouse_position_{current_time}.log'
+if not os.path.exists(LOG_DIR):
+    os.mkdir(LOG_DIR)
+log_filename = os.path.join(LOG_DIR, f'mouse_position_{current_time}.log')
 
 logging.basicConfig(
     filename= log_filename,  # Лог будет сохраняться в файл "mouse_position.log"
