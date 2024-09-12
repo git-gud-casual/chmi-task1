@@ -50,7 +50,7 @@ class Map:
 
     def _generate_objects(self) -> List[Object]:
         objects = []
-        free_positions = list(product(list(range(DIMENSION))))
+        free_positions = list(product(list(range(DIMENSION)), repeat=2))
         for obj in self._borders:
             for row_index in range(obj.corner.y, obj.corner.y + obj.height):
                 for column_index in range(obj.corner.x, obj.corner.x + obj.width):
