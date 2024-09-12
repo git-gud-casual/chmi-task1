@@ -50,7 +50,7 @@ class MyWidget(QtWidgets.QWidget):
         x = local_pos.x()
         y = local_pos.y()
         # логируем положение мыши
-        if (self.width() > x => 0) and (0 <= y < self.height()):
+        if (self.width() > x >= 0) and (0 <= y < self.height()):
             logging.info(f"Координаты мыши: X={x}, Y={y}")
             # Выводим координаты в консоль
             print(f"Координаты мыши: X={x}, Y={y}")
