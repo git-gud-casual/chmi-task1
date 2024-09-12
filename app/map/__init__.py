@@ -1,4 +1,4 @@
-from .map import Map, Rect, Point
+from .map_ import Map, Rect, Point
 from .loaders import JsonLoader
 
 
