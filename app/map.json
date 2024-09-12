@@ -5,7 +5,7 @@
         "x": 0,
         "y": 0
       },
-      "width": 1,
+      "width": 3,
       "height": 1000
     },
     {
@@ -14,23 +14,47 @@
         "y": 0
       },
       "width": 1000,
-      "height": 1
+      "height": 3
     },
     {
       "point": {
-        "x": 1000,
+        "x": 997,
         "y": 0
       },
-      "width": 1,
+      "width": 3,
       "height": 1000
     },
     {
       "point": {
         "x": 0,
-        "y": 1000
+        "y": 997
       },
       "width": 1000,
-      "height": 1
+      "height": 3
+    },
+    {
+      "point": {
+        "x": 200,
+        "y": 0
+      },
+      "width": 10,
+      "height": 900
+    },
+    {
+      "point": {
+        "x": 790,
+        "y": 100
+      },
+      "width": 10,
+      "height": 900
+    },
+    {
+      "point": {
+        "x": 300,
+        "y": 200
+      },
+      "width": 400,
+      "height": 600
     }
   ]
 }

@@ -2,7 +2,7 @@ import json
 from abc import ABC, abstractmethod
 from typing import Union, TextIO
 
-from .map import Map, Rect, List, Point
+from .map_ import Map, Rect, List, Point
 
 
 class MapLoaderException(Exception):
