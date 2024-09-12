@@ -1,7 +1,16 @@
 import sys
 import random
+import logging
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtGui import QPainter, QColor
+
+logging.basicConfig(
+    filename='mouse_position.log',  # Лог будет сохраняться в файл "mouse_position.log"
+    level=logging.INFO,  # Устанавливаем уровень логирования
+    format='%(asctime)s - %(message)s',  # Формат сообщения с указанием времени
+    datefmt='%Y-%m-%d %H:%M:%S',  # Формат времени
+    encoding='UTF-8'
+)
 
 
 class MyWidget(QtWidgets.QWidget):
@@ -34,9 +43,11 @@ class MyWidget(QtWidgets.QWidget):
 
         # Преобразуем глобальные координаты в координаты внутри окна
         local_pos = self.mapFromGlobal(pos)
-
+        x = local_pos.x()
+        y = local_pos.y()
+        logging.info(f"Координаты мыши: X={x}, Y={y}")
         # Выводим координаты в консоль
-        print(f"Координаты мыши: X={local_pos.x()}, Y={local_pos.y()}")
+        # print(f"Координаты мыши: X={x}, Y={y}")
 
 
 if __name__ == "__main__":
