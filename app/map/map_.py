@@ -5,7 +5,6 @@ from itertools import product
 from typing import List, Tuple
 from dataclasses import dataclass
 
-
 DIMENSION = 1000
 
 
@@ -47,6 +46,7 @@ class Rect(AbstractContainsMixin):
 class Circle(AbstractContainsMixin):
     pos: Point
     is_target: bool
+    speed: Point
     radius: int = 10
 
     def contains(self, point: Point) -> bool:
@@ -58,6 +58,8 @@ class Circle(AbstractContainsMixin):
 
 class Map:
     OBJECTS_COUNT = 15
+    OBJECT_X_MAX_SPEED = 10
+    OBJECT_Y_MAX_SPEED = 10
     _borders: List[Rect]
     _targets: List[Circle]
     _target: Circle
@@ -82,7 +84,9 @@ class Map:
 
         free_positions -= borders_positions
         for i, pos in enumerate(random.sample(free_positions, self.OBJECTS_COUNT)):
-            objects.append(Circle(Point(*pos), i == 0))
+            speed = Point(random.randint(1, self.OBJECT_X_MAX_SPEED) * random.choice((-1, 1)),
+                          random.randint(1, self.OBJECT_Y_MAX_SPEED) * random.choice((-1, 1)))
+            objects.append(Circle(Point(*pos), i == 0, speed))
         return objects
 
     def _validate_objects(self, objects: List[Circle]):
@@ -96,6 +100,21 @@ class Map:
     def collide_with_target(self, pos: Point) -> bool:
         return self._target.contains(pos)
 
+    def process(self):
+        for obj in self._targets:
+            speed_x, speed_y = obj.speed.to_tuple()
+            x, y = obj.pos.to_tuple()
+            for v in ((1, 0), (0, 1), (1, 1)):
+                new_point = Point(x + speed_x * v[0], y + speed_y * v[1])
+                if (not all(0 <= coord < DIMENSION for coord in new_point.to_tuple()) or
+                        self.collide_with_borders(new_point)):
+                    multipliers = tuple(-1 if coord else 1 for coord in v)
+                    speed = Point(speed_x * multipliers[0], speed_y * multipliers[1])
+                    obj.speed = speed
+                    break
+
+            obj.pos = Point(x + obj.speed.x, y + obj.speed.y)
+
     @property
     def borders(self) -> List[Rect]:
         return self._borders.copy()
@@ -103,3 +122,7 @@ class Map:
     @property
     def targets(self) -> List[Circle]:
         return self._targets.copy()
+
+    @property
+    def target(self) -> Circle:
+        return self._target
