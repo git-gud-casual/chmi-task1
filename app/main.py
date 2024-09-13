@@ -60,6 +60,10 @@ class MainWindow(QtWidgets.QWidget):
         target_pos = QPoint(20, 20)  # Задай нужные координаты внутри окна
         self.cursor().setPos(self.mapToGlobal(target_pos))
 
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:  # Проверяем, была ли нажата клавиша Esc
+            self.close()  # Закрываем окно
+
     @staticmethod
     def _log_position(pos: QPoint, pos_object_name: str = "Координаты мыши"):
         x = pos.x()
@@ -82,8 +86,8 @@ class MainWindow(QtWidgets.QWidget):
             dlg.exec()
             self._timer.start()
             qpoint = QPoint()
-            qpoint.setX(0)
-            qpoint.setY(0)
+            qpoint.setX(20)
+            qpoint.setY(20)
             self.cursor().setPos(self.mapToGlobal(qpoint))
         else:
             self._last_cursor_pos = pos
