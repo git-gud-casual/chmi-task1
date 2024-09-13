@@ -47,6 +47,12 @@ class MainWindow(QtWidgets.QWidget):
         # self.timer.timeout.connect(self.track_mouse_position)
         self.timer.start(16)  # Обновление каждые 16 мс (примерно 60 кадров в секунду)
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        # Устанавливаем курсор в нужное положение после отображения окна
+        target_pos = QPoint(20, 20)  # Задай нужные координаты внутри окна
+        self.cursor().setPos(self.mapToGlobal(target_pos))
+
     @staticmethod
     def _log_mouse_position(pos: QPoint):
         x = pos.x()
