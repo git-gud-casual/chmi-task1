@@ -36,8 +36,9 @@ class MainWindow(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("hmi")
-
-        self._map = JsonLoader("map.json").load()
+        file = QtWidgets.QFileDialog.getOpenFileName()
+        self._map = JsonLoader(file[0]).load()
+        #self._map = JsonLoader("map.json").load()
         self._painter = QPainter(self)
         self._map_painter = MapPainter(self._map, (self.width(), self.height()))
 
