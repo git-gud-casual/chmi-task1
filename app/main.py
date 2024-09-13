@@ -3,7 +3,7 @@ import logging
 import datetime
 import os
 
-from PySide6 import QtWidgets, QtGui
+from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QPainter
 
@@ -38,11 +38,14 @@ class MainWindow(QtWidgets.QWidget):
         self.setWindowTitle("hmi")
         file = QtWidgets.QFileDialog.getOpenFileName()
         self._map = JsonLoader(file[0]).load()
-        #self._map = JsonLoader("map.json").load()
+        # self._map = JsonLoader("map.json").load()
         self._painter = QPainter(self)
         self._map_painter = MapPainter(self._map, (self.width(), self.height()))
-
         self.setMouseTracking(True)
+        # Timer
+        self.timer = QtCore.QTimer(self)
+        # self.timer.timeout.connect(self.track_mouse_position)
+        self.timer.start(16)  # Обновление каждые 16 мс (примерно 60 кадров в секунду)
 
     @staticmethod
     def _log_mouse_position(pos: QPoint):
