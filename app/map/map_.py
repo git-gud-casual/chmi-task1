@@ -1,16 +1,25 @@
 import random
 
-from math import sqrt
+from contextlib import suppress
+from copy import deepcopy
 from abc import ABC, abstractmethod
 from itertools import product
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Set
 from dataclasses import dataclass
+from enum import Enum
 
 DIMENSION = 1000
 
 
 class MapException(Exception):
     pass
+
+
+class SideStep(Enum):
+    TOP = (0, -1)
+    BOTTOM = (0, 1)
+    RIGHT = (1, 0)
+    LEFT = (-1, 0)
 
 
 @dataclass
@@ -47,6 +56,7 @@ class Rect(AbstractContainsMixin):
                                  circle.pos.y - circle.radius),
                            width=circle.radius * 2,
                            height=circle.radius * 2)
+
         return self.corner.x < circle_rect.corner.x + circle_rect.width and \
             self.corner.x + self.width > circle_rect.corner.x and \
             self.corner.y < circle_rect.corner.y + circle_rect.height and \
@@ -59,7 +69,11 @@ class Circle(AbstractContainsMixin):
     is_target: bool
     speed: int
     speed_vector: Point
+    bounding_sides: Set = None
     radius: int = 10
+
+    def __post_init__(self):
+        self.bounding_sides = set()
 
     def contains(self, point: Point) -> bool:
         cx, cy = self.pos.to_tuple()
@@ -118,6 +132,40 @@ class Map:
 
     def process(self):
         for obj in self._targets:
+            for _ in range(obj.speed):
+                bounding_sides = set()
+                next_circle = deepcopy(obj)
+                for side in (SideStep.TOP, SideStep.RIGHT, SideStep.BOTTOM, SideStep.LEFT):
+                    next_x, next_y = obj.pos.x + side.value[0], obj.pos.y + side.value[1]
+                    next_circle.pos = Point(next_x, next_y)
+                    if self.collide_with_borders(next_circle):
+                        bounding_sides.add(side)
+
+                if obj.bounding_sides != bounding_sides:
+                    try:
+                        side_to_move = random.choice(list({SideStep.BOTTOM, SideStep.TOP,
+                                                           SideStep.LEFT, SideStep.RIGHT} - bounding_sides))
+                        obj.speed_vector = Point(*side_to_move.value)
+                    except IndexError:
+                        print(1)
+                        # Выталкивание
+                        for border in filter(lambda b: b.collide(obj), self._borders):
+                            for width in (0, border.width):
+                                x_step = abs(border.corner.x + width - obj.pos.x)
+                                x_step = 0 if x_step > obj.radius else x_step
+                                obj.pos.x += x_step * (-1 if not width else 1)
+                            for height in (0, border.height):
+                                y_step = abs(border.corner.y + height - obj.pos.y)
+                                y_step = 0 if y_step > obj.radius else y_step
+                                obj.pos.y += y_step * (-1 if not height else 1)
+
+                obj.bounding_sides = bounding_sides
+                speed_x, speed_y = obj.speed_vector.to_tuple()
+                obj.pos = Point(obj.pos.x + speed_x, obj.pos.y + speed_y)
+
+
+    """def process(self):
+        for obj in self._targets:
             for i in range(obj.speed):
                 speed_x, speed_y = map(lambda vec: vec, obj.speed_vector.to_tuple())
                 x, y = obj.pos.to_tuple()
@@ -135,7 +183,7 @@ class Map:
                             obj.speed_vector = speed_vec
 
                 speed_x, speed_y = map(lambda vec: vec, obj.speed_vector.to_tuple())
-                obj.pos = Point(x + speed_x, y + speed_y)
+                obj.pos = Point(x + speed_x, y + speed_y)"""
 
     @property
     def borders(self) -> List[Rect]:
