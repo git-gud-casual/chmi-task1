@@ -19,15 +19,6 @@ LOG_DIR = "logs"
 current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 if not os.path.exists(LOG_DIR):
     os.mkdir(LOG_DIR)
-log_filename = os.path.join(LOG_DIR, f'mouse_position_{current_time}.log')
-
-logging.basicConfig(
-    filename=log_filename,  # Лог будет сохраняться в файл "mouse_position.log"
-    level=logging.INFO,  # Устанавливаем уровень логирования
-    format='%(asctime)s - %(message)s',  # Формат сообщения с указанием времени
-    datefmt='%Y-%m-%d %H:%M:%S',  # Формат времени
-    encoding='UTF-8'
-)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -36,6 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
     _map_painter: MapPainter
     _last_cursor_pos: QPoint = None
     _user: User = None
+    _paused: bool = True
     TIMER_TIME_MS = 16
 
     def __init__(self):
@@ -51,10 +43,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self._map = JsonLoader(file[0]).load()
 
         self.resize(800, 600)
+        self.ui.start_game_btn.clicked.connect(self._start_game)
+
         self._painter = QPainter(self.ui.paint_widget)
         self._map_painter = MapPainter(self._map, (self.ui.paint_widget.width(),
                                                    self.ui.paint_widget.height()))
-
         self.update_speed(self._map.target.speed)
         self.ui.speed_slider.setRange(0, self._map.OBJECT_MAX_SPEED)
         self.ui.speed_slider.setSingleStep(1)
@@ -63,7 +56,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self._timer_event)
+        self.ui.centralwidget.setMouseTracking(False)
+
+    def _start_game(self):
+        qpoint = QPoint(20, 20)
+        self.cursor().setPos(self.mapToGlobal(qpoint))
+        self._last_cursor_pos = qpoint
+        self.ui.start_game_btn.setDisabled(True)
+        self.ui.start_game_btn.setVisible(False)
+        self.ui.centralwidget.setMouseTracking(True)
         self._timer.start(self.TIMER_TIME_MS)  # Обновление каждые 16 мс (примерно 60 кадров в секунду)
+        self._paused = False
+
+    def _stop_game(self):
+        self.ui.start_game_btn.setEnabled(True)
+        self.ui.start_game_btn.setVisible(True)
+        self.ui.centralwidget.setMouseTracking(False)
+        self._timer.stop()
+        self._paused = True
 
     def update_speed(self, value):
         self.ui.speed_slider_label.setText(f"Скорость: {value}")
@@ -80,8 +90,8 @@ class MainWindow(QtWidgets.QMainWindow):
         super().showEvent(event)
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Escape:  # Проверяем, была ли нажата клавиша Esc
-            self.close()  # Закрываем окно
+        if event.key() == QtCore.Qt.Key_Escape:
+            self._stop_game()
 
     @staticmethod
     def _log_position(pos: QPoint, pos_object_name: str = "Координаты мыши"):
@@ -118,13 +128,14 @@ class MainWindow(QtWidgets.QMainWindow):
             dlg.setText("Цель достигнута")
             dlg.resize(250, 50)
             dlg.exec()
-            self._timer.start()
-            qpoint = QPoint(20, 20)
-            self.cursor().setPos(self.mapToGlobal(qpoint))
+            self._stop_game()
         else:
             self._last_cursor_pos = pos
 
     def mouseMoveEvent(self, event):
+        if self._paused:
+            return
+
         pos = QtGui.QCursor.pos()
         # Преобразуем глобальные координаты в координаты внутри окна
         local_pos = self.mapFromGlobal(pos)
@@ -145,6 +156,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @user.setter
     def user(self, user: User):
+        log_filename = os.path.join(LOG_DIR, f'logs_{user.last_name}_{current_time}.log')
+
+        logging.basicConfig(
+            filename=log_filename,  # Лог будет сохраняться в файл "mouse_position.log"
+            level=logging.INFO,  # Устанавливаем уровень логирования
+            format='%(asctime)s - %(message)s',  # Формат сообщения с указанием времени
+            datefmt='%Y-%m-%d %H:%M:%S',  # Формат времени
+            encoding='UTF-8'
+        )
+
         self._user = user
 
 

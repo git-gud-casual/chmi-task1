@@ -44,6 +44,15 @@
       <property name="mouseTracking">
        <bool>true</bool>
       </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="start_game_btn">
+         <property name="text">
+          <string>Начать</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>

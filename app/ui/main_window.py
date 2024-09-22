@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QFormLayout, QFrame, QHBoxLayout,
-    QLabel, QMainWindow, QMenuBar, QSizePolicy,
-    QSlider, QStatusBar, QWidget)
+from PySide6.QtWidgets import (QApplication, QFormLayout, QFrame, QGridLayout,
+    QHBoxLayout, QLabel, QMainWindow, QMenuBar,
+    QPushButton, QSizePolicy, QSlider, QStatusBar,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -41,6 +42,13 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.paint_widget.sizePolicy().hasHeightForWidth())
         self.paint_widget.setSizePolicy(sizePolicy)
         self.paint_widget.setMouseTracking(True)
+        self.gridLayout = QGridLayout(self.paint_widget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.start_game_btn = QPushButton(self.paint_widget)
+        self.start_game_btn.setObjectName(u"start_game_btn")
+
+        self.gridLayout.addWidget(self.start_game_btn, 0, 0, 1, 1)
+
 
         self.horizontalLayout.addWidget(self.paint_widget)
 
@@ -87,6 +95,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        self.start_game_btn.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0447\u0430\u0442\u044c", None))
         self.speed_slider_label.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043a\u043e\u0440\u043e\u0441\u0442\u044c: 0", None))
     # retranslateUi
 
