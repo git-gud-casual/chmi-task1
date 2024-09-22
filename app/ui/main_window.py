@@ -47,7 +47,7 @@ class Ui_MainWindow(object):
         self.start_game_btn = QPushButton(self.paint_widget)
         self.start_game_btn.setObjectName(u"start_game_btn")
 
-        self.gridLayout.addWidget(self.start_game_btn, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.start_game_btn, 0, 0, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
 
         self.horizontalLayout.addWidget(self.paint_widget)
