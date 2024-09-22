@@ -11,6 +11,7 @@ from PySide6.QtGui import QPainter
 from map import Map, JsonLoader, Point
 from map.map_ import DIMENSION
 from map.painter import MapPainter
+from ui.main_window import Ui_MainWindow
 
 LOG_DIR = "logs"
 
@@ -28,7 +29,7 @@ logging.basicConfig(
 )
 
 
-class MainWindow(QtWidgets.QWidget):
+class MainWindow(QtWidgets.QMainWindow):
     _map: Map
     _painter: QPainter
     _map_painter: MapPainter
@@ -37,20 +38,35 @@ class MainWindow(QtWidgets.QWidget):
 
     def __init__(self):
         super().__init__()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+
         self.setWindowTitle("hmi")
         file = QtWidgets.QFileDialog.getOpenFileName()
         self._map = JsonLoader(file[0]).load()
-        self._painter = QPainter(self)
-        self._map_painter = MapPainter(self._map, (self.width(), self.height()))
-        self.setMouseTracking(True)
+
+        self.resize(800, 600)
+        self._painter = QPainter(self.ui.paint_widget)
+        self._map_painter = MapPainter(self._map, (self.ui.paint_widget.width(),
+                                                   self.ui.paint_widget.height()))
+
+        self.update_speed(self._map.target.speed.x)
+        self.ui.speed_slider.setRange(0, self._map.OBJECT_X_MAX_SPEED)
+        self.ui.speed_slider.setSingleStep(1)
+        self.ui.speed_slider.setValue(self._map.target.speed.x)
+        self.ui.speed_slider.valueChanged.connect(self.update_speed)
 
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self._timer_event)
         self._timer.start(self.TIMER_TIME_MS)  # Обновление каждые 16 мс (примерно 60 кадров в секунду)
 
+    def update_speed(self, value):
+        self.ui.speed_slider_label.setText(f"Скорость: {value}")
+
     def _timer_event(self):
         self._map.process()
-        qpoint = point_to_q_point(self._map.target.pos, (self.width(), self.height()))
+        qpoint = point_to_q_point(self._map.target.pos, (self.ui.paint_widget.width(),
+                                                         self.ui.paint_widget.height()))
         self._log_position(qpoint, "Координаты цели")
         self.update()
 
@@ -72,7 +88,7 @@ class MainWindow(QtWidgets.QWidget):
         logging.info(f"{pos_object_name}: X={x}, Y={y}")
 
     def _cursor_return(self, pos: QPoint):
-        window_size = (self.width(), self.height())
+        window_size = (self.ui.paint_widget.width(), self.ui.paint_widget.height())
         point = q_point_to_point(pos, window_size)
         if self._map.collide_with_borders(point) and self._last_cursor_pos:
             self.cursor().setPos(self.mapToGlobal(self._last_cursor_pos))
@@ -100,7 +116,7 @@ class MainWindow(QtWidgets.QWidget):
         self._cursor_return(local_pos)
 
     def resizeEvent(self, event):
-        self._map_painter.window_size = (self.width(), self.height())
+        self._map_painter.window_size = (self.ui.paint_widget.width(), self.ui.paint_widget.height())
 
     def paintEvent(self, event):
         self._painter.begin(self)
