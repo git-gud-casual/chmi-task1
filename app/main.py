@@ -82,7 +82,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def _log_position(pos: QPoint, pos_object_name: str = "Координаты мыши"):
         x = pos.x()
         y = pos.y()
-        print(f"{pos_object_name}: X={x}, Y={y}")
         logging.info(f"{pos_object_name}: X={x}, Y={y}")
 
     def _cursor_return(self, pos: QPoint):

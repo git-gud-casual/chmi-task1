@@ -42,6 +42,16 @@ class Rect(AbstractContainsMixin):
         x, y = self.corner.to_tuple()
         return x <= point.x < x + self.width and y <= point.y < y + self.height
 
+    def collide(self, circle: "Circle"):
+        circle_rect = Rect(Point(circle.pos.x - circle.radius,
+                                 circle.pos.y - circle.radius),
+                           width=circle.radius * 2,
+                           height=circle.radius * 2)
+        return self.corner.x < circle_rect.corner.x + circle_rect.width and \
+            self.corner.x + self.width > circle_rect.corner.x and \
+            self.corner.y < circle_rect.corner.y + circle_rect.height and \
+            self.corner.y + self.height > circle_rect.corner.y
+
 
 @dataclass
 class Circle(AbstractContainsMixin):
@@ -101,15 +111,7 @@ class Map:
         if isinstance(obj, Point):
             return any(border.contains(obj) for border in self._borders)
         else:
-            for border in self._borders:
-                x = max(border.corner.x, min(obj.pos.x,
-                                             border.corner.x + border.width - 1))
-                y = max(border.corner.y, min(obj.pos.y,
-                                             border.corner.y + border.height - 1))
-                distance = sqrt((x - obj.pos.x) ** 2 + (y - obj.pos.y) ** 2)
-                if distance <= obj.radius:
-                    return True
-            return False
+            return any(border.collide(obj) for border in self._borders)
 
     def collide_with_target(self, pos: Point) -> bool:
         return self._target.contains(pos)
@@ -117,24 +119,22 @@ class Map:
     def process(self):
         for obj in self._targets:
             for i in range(obj.speed):
-                speed_x, speed_y = map(lambda vec: vec * 1, obj.speed_vector.to_tuple())
+                speed_x, speed_y = map(lambda vec: vec, obj.speed_vector.to_tuple())
                 x, y = obj.pos.to_tuple()
                 obj.pos = Point(x + speed_x, y + speed_y)
-                if (not all(0 <= coord < DIMENSION for coord in obj.pos.to_tuple()) or
-                        self.collide_with_borders(obj)):
-                    coeff = random.choice((1, -1))
-                    speed_vec = Point(x=int(not bool(obj.speed_vector.x)) * coeff,
-                                      y=int(not bool(obj.speed_vector.y)) * coeff)
-                    obj.speed_vector = speed_vec
-                    speed_x, speed_y = map(lambda vec: vec * 1, obj.speed_vector.to_tuple())
-                    obj.pos = Point(x + speed_x, y + speed_y)
-                    if (not all(0 <= coord < DIMENSION for coord in obj.pos.to_tuple()) or
-                            self.collide_with_borders(obj)):
-                        coeff = -coeff
-                        speed_vec = Point(x=obj.speed_vector.x * coeff,
-                                          y=obj.speed_vector.y * coeff)
-                        obj.speed_vector = speed_vec
-                speed_x, speed_y = map(lambda vec: vec * 1, obj.speed_vector.to_tuple())
+                if self.collide_with_borders(obj):
+                    speed_vec = Point(x=int(not bool(obj.speed_vector.x)),
+                                      y=int(not bool(obj.speed_vector.y)))
+                    coeff_list = [1, -1]
+                    random.shuffle(coeff_list)
+                    for coeff in coeff_list:
+                        speed_vec = Point(*map(lambda vec: vec * coeff, speed_vec.to_tuple()))
+                        speed_x, speed_y = speed_vec.to_tuple()
+                        obj.pos = Point(x + speed_x, y + speed_y)
+                        if not self.collide_with_borders(obj):
+                            obj.speed_vector = speed_vec
+
+                speed_x, speed_y = map(lambda vec: vec, obj.speed_vector.to_tuple())
                 obj.pos = Point(x + speed_x, y + speed_y)
 
     @property
