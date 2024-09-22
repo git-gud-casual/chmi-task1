@@ -147,7 +147,6 @@ class Map:
                                                            SideStep.LEFT, SideStep.RIGHT} - bounding_sides))
                         obj.speed_vector = Point(*side_to_move.value)
                     except IndexError:
-                        print(1)
                         # Выталкивание
                         for border in filter(lambda b: b.collide(obj), self._borders):
                             for width in (0, border.width):
@@ -162,28 +161,6 @@ class Map:
                 obj.bounding_sides = bounding_sides
                 speed_x, speed_y = obj.speed_vector.to_tuple()
                 obj.pos = Point(obj.pos.x + speed_x, obj.pos.y + speed_y)
-
-
-    """def process(self):
-        for obj in self._targets:
-            for i in range(obj.speed):
-                speed_x, speed_y = map(lambda vec: vec, obj.speed_vector.to_tuple())
-                x, y = obj.pos.to_tuple()
-                obj.pos = Point(x + speed_x, y + speed_y)
-                if self.collide_with_borders(obj):
-                    speed_vec = Point(x=int(not bool(obj.speed_vector.x)),
-                                      y=int(not bool(obj.speed_vector.y)))
-                    coeff_list = [1, -1]
-                    random.shuffle(coeff_list)
-                    for coeff in coeff_list:
-                        speed_vec = Point(*map(lambda vec: vec * coeff, speed_vec.to_tuple()))
-                        speed_x, speed_y = speed_vec.to_tuple()
-                        obj.pos = Point(x + speed_x, y + speed_y)
-                        if not self.collide_with_borders(obj):
-                            obj.speed_vector = speed_vec
-
-                speed_x, speed_y = map(lambda vec: vec, obj.speed_vector.to_tuple())
-                obj.pos = Point(x + speed_x, y + speed_y)"""
 
     @property
     def borders(self) -> List[Rect]:
