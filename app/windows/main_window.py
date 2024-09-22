@@ -159,7 +159,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @user.setter
     def user(self, user: User):
-        log_filename = os.path.join(LOG_DIR, f'logs_{user.last_name}_{current_time}.log')
+        log_filename = os.path.join(LOG_DIR, f'logs_{user.last_name}_{current_time}.log'.replace(
+            " ", "_")
+                                    )
 
         logging.basicConfig(
             filename=log_filename,  # Лог будет сохраняться в файл "mouse_position.log"
