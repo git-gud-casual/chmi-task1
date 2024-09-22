@@ -24,7 +24,7 @@ if not os.path.exists(LOG_DIR):
 class MainWindow(QtWidgets.QMainWindow):
     _map: Map
     _painter: QPainter
-    _map_painter: MapPainter
+    _map_painter: MapPainter = None
     _last_cursor_pos: QPoint = None
     _user: User = None
     _paused: bool = True
@@ -45,9 +45,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.resize(800, 600)
         self.ui.start_game_btn.clicked.connect(self._start_game)
 
+        def paint_widget_resize_event(_):
+            if self._map_painter is None:
+                self._map_painter = MapPainter(self._map, (self.ui.paint_widget.width(),
+                                                           self.ui.paint_widget.height()))
+            else:
+                self._map_painter.window_size = (self.ui.paint_widget.width(), self.ui.paint_widget.height())
+        self.ui.paint_widget.resizeEvent = paint_widget_resize_event
+
         self._painter = QPainter(self.ui.paint_widget)
-        self._map_painter = MapPainter(self._map, (self.ui.paint_widget.width(),
-                                                   self.ui.paint_widget.height()))
         self.update_speed(self._map.target.speed)
         self.ui.speed_slider.setRange(0, self._map.OBJECT_MAX_SPEED)
         self.ui.speed_slider.setSingleStep(1)
@@ -141,9 +147,6 @@ class MainWindow(QtWidgets.QMainWindow):
         local_pos = self.mapFromGlobal(pos)
         self._log_position(local_pos)
         self._cursor_return(local_pos)
-
-    def resizeEvent(self, event):
-        self._map_painter.window_size = (self.ui.paint_widget.width(), self.ui.paint_widget.height())
 
     def paintEvent(self, event):
         self._painter.begin(self)
