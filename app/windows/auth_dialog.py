@@ -1,7 +1,7 @@
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
-from app.ui.auth_dialog import Ui_auth_dialog
+from app.windows.ui.auth_dialog import Ui_auth_dialog
 from app.windows.dto.user import User
 
 

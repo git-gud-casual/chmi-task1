@@ -10,7 +10,7 @@ from PySide6.QtGui import QPainter
 from app.map import Map, JsonLoader, Point
 from app.map.map_ import DIMENSION
 from app.map.painter import MapPainter
-from app.ui.main_window import Ui_MainWindow
+from app.windows.ui.main_window import Ui_MainWindow
 from app.windows.auth_dialog import AuthDialog
 from app.windows.dto.user import User
 
