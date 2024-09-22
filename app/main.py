@@ -50,10 +50,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self._map_painter = MapPainter(self._map, (self.ui.paint_widget.width(),
                                                    self.ui.paint_widget.height()))
 
-        self.update_speed(self._map.target.speed.x)
-        self.ui.speed_slider.setRange(0, self._map.OBJECT_X_MAX_SPEED)
+        self.update_speed(self._map.target.speed)
+        self.ui.speed_slider.setRange(0, self._map.OBJECT_MAX_SPEED)
         self.ui.speed_slider.setSingleStep(1)
-        self.ui.speed_slider.setValue(self._map.target.speed.x)
+        self.ui.speed_slider.setValue(self._map.target.speed)
         self.ui.speed_slider.valueChanged.connect(self.update_speed)
 
         self._timer = QtCore.QTimer(self)
@@ -62,6 +62,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_speed(self, value):
         self.ui.speed_slider_label.setText(f"Скорость: {value}")
+        self._map.target.speed = value
 
     def _timer_event(self):
         self._map.process()
@@ -72,9 +73,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def showEvent(self, event):
         super().showEvent(event)
-        # Устанавливаем курсор в нужное положение после отображения окна
-        target_pos = QPoint(20, 20)  # Задай нужные координаты внутри окна
-        self.cursor().setPos(self.mapToGlobal(target_pos))
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:  # Проверяем, была ли нажата клавиша Esc
@@ -88,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
         logging.info(f"{pos_object_name}: X={x}, Y={y}")
 
     def _cursor_return(self, pos: QPoint):
-        window_size = (self.width(), self.height())
+        window_size = (self.ui.paint_widget.width(), self.ui.paint_widget.height())
         current_point = q_point_to_point(pos, window_size)
 
         if self._last_cursor_pos:
