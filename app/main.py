@@ -88,11 +88,27 @@ class MainWindow(QtWidgets.QMainWindow):
         logging.info(f"{pos_object_name}: X={x}, Y={y}")
 
     def _cursor_return(self, pos: QPoint):
-        window_size = (self.ui.paint_widget.width(), self.ui.paint_widget.height())
-        point = q_point_to_point(pos, window_size)
-        if self._map.collide_with_borders(point) and self._last_cursor_pos:
-            self.cursor().setPos(self.mapToGlobal(self._last_cursor_pos))
-        elif self._map.collide_with_target(point):
+        window_size = (self.width(), self.height())
+        current_point = q_point_to_point(pos, window_size)
+
+        if self._last_cursor_pos:
+            last_point = q_point_to_point(self._last_cursor_pos, window_size)
+
+            # Количество шагов для проверки промежуточных точек
+            steps = 20
+            for i in range(1, steps + 1):
+                # Линейная интерполяция между последней и текущей позицией
+                interp_x = last_point.x + (current_point.x - last_point.x) * i / steps
+                interp_y = last_point.y + (current_point.y - last_point.y) * i / steps
+                intermediate_point = Point(int(interp_x), int(interp_y))
+
+                if self._map.collide_with_borders(intermediate_point):
+                    # Возвращаем курсор в последнее допустимое положение
+                    self.cursor().setPos(self.mapToGlobal(self._last_cursor_pos))
+                    return
+
+        # Если нет столкновения, обновляем последнее положение курсора
+        if self._map.collide_with_target(current_point):
             logging.info(f"Цель достигнута x={pos.x()} y={pos.y()}")
             self._timer.stop()
             dlg = QtWidgets.QMessageBox(self)
@@ -101,9 +117,7 @@ class MainWindow(QtWidgets.QMainWindow):
             dlg.resize(250, 50)
             dlg.exec()
             self._timer.start()
-            qpoint = QPoint()
-            qpoint.setX(20)
-            qpoint.setY(20)
+            qpoint = QPoint(20, 20)
             self.cursor().setPos(self.mapToGlobal(qpoint))
         else:
             self._last_cursor_pos = pos
